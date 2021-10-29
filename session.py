@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, request, session
-# The Session instance is not used for direct access, you should always use flask.session
+
 from flask_session import Session
   
 app = Flask(__name__)
