@@ -1,37 +1,33 @@
-from flask import Flask,render_template,request
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import Session
-
+from flask import Flask, render_template, redirect, request, session
+# The Session instance is not used for direct access, you should always use flask.session
+from flask_session import Session
+  
 app = Flask(__name__)
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///session.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
-app.config["SECRET_KEY"] = "random string"
-db = SQLAlchemy(app)
-
-
-class Folder(db.Model):
-
-    __tablename__ = "folder"
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50))
-    files = db.relationship("File", backref="files")
-
-    def __repr__(self):
-        return f"Folder({self.name})"
-
-
-class File(db.Model):
-
-    __tablename__ = "file"
-
-    id = db.Column(db.Integer, primary_key=True)
-    folder_id = db.Column(db.Integer, db.ForeignKey("folder.id"))
-    name = db.Column(db.String(50))
-    size = db.Column(db.Integer)
-
-db.create_all()
-
-def __repr__(self):
-        return f"File({self.folder_id}, {self.name}, {self.size})"
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+  
+  
+@app.route("/")
+def index():
+    if not session.get("name"):
+        return redirect("/login")
+    return render_template('index.html')
+  
+  
+@app.route("/login", methods=["POST", "GET"])
+def login():
+    if request.method == "POST":
+        session["name"] = request.form.get("name")
+        return redirect("/")
+    return render_template("login.html")
+  
+  
+@app.route("/logout")
+def logout():
+    session["name"] = None
+    return redirect("/")
+  
+  
+if __name__ == "__main__":
+    app.run(debug=True)
